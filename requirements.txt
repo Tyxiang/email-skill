@@ -1,4 +1,4 @@
-# Email-Skill Dependencies
+# email-skill Dependencies
 # ========================
 # This project uses only Python standard library modules.
 # No external dependencies are required.
