@@ -1,6 +1,17 @@
 ---
 name: email-skill
 description: This skill provides script-based email operations for an agent. It includes functionalities for managing mailboxes, reading/searching emails, sending/replying/forwarding emails, and managing attachments, allowing agents to perform comprehensive email-related tasks programmatically.
+metadata:
+  openclaw:
+    requires:
+      env:
+        - EMAIL_USERNAME
+        - EMAIL_PASSWORD
+        - EMAIL_OAUTH2_CLIENT_ID
+        - EMAIL_OAUTH2_CLIENT_SECRET
+        - EMAIL_OAUTH2_REFRESH_TOKEN
+        - EMAIL_OAUTH2_TOKEN_URL
+    primaryEnv: EMAIL_PASSWORD
 ---
 
 # email-skill
