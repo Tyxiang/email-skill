@@ -1,24 +1,72 @@
 ﻿---
 name: email-skill
-description: This skill provides script-based email operations for an agent. It includes functionalities for managing mailboxes, reading/searching emails, sending/replying/forwarding emails, and managing attachments, allowing agents to perform comprehensive email_related tasks programmatically.
+description: This skill provides script-based email operations for an agent. It includes functionalities for managing mailboxes, reading/searching emails, sending/replying/forwarding emails, and managing attachments, allowing agents to perform comprehensive email-related tasks programmatically.
 ---
 
 # email-skill
 
-## 1. Overview
+This skill provides script-based email operations for an agent. It includes functionalities for managing mailboxes, reading/searching emails, sending/replying/forwarding emails, and managing attachments, allowing agents to perform comprehensive email-related tasks programmatically.
 
-This skill provides script-based email operations for an agent. It includes functionalities for managing mailboxes, reading/searching emails, sending/replying/forwarding emails, and managing attachments, allowing agents to perform comprehensive email_related tasks programmatically.
+## Features
 
-## 2. Configuration
+- **IMAP operations**: Read, list, mark, move, delete, copy emails
+- **SMTP operations**: Send, reply, forward emails with attachments
+- **Folder management**: Create, delete, rename, list mailboxes
+- **Dual-format bodies**: Supports both plain-text and HTML, with automatic fallback generation
+- **Attachment handling**: Supports base64-encoded attachments
+- **Multi-account support**: Configure multiple accounts with different authentication methods
+- **Authentication**: Supports username/password, app-password, and OAuth2
+- **Signatures**: Automatic signature appending to outgoing emails
+- **Thread support**: Proper In-Reply-To and References header handling
+
+## When to use
+
+Use this skill when you need an agent to:
+
+- Check inbox for new emails and summarize them
+- Read specific emails and extract content
+- Send new emails with attachments
+- Reply to or forward emails
+- Organize emails by moving/copying between folders
+- Create or manage mailbox folders
+- Mark emails as read/unread, flagged, spam, or junk
+
+## Requirements
+
+- Python 3.11+
+- IMAP/SMTP access to your email provider
+- Network access to email servers
+
+## Instructions
+
+### Installation
+
+No installation required. This skill runs directly via Python scripts.
+
+### Quick Start
+
+1. Copy `scripts/config.sample.toml` to `scripts/config.toml`
+2. Fill in your email account credentials in `config.toml`
+3. Run a test script to verify connectivity:
+
+```bash
+# List new emails (Windows)
+echo '{"requestId":"test","schemaVersion":"1.0","data":{"maxResults":5}}' | python scripts/mail_list.py
+
+# List new emails (Linux/Mac)
+echo '{"requestId":"test","schemaVersion":"1.0","data":{"maxResults":5}}' | python3 scripts/mail_list.py
+```
+
+### Configuration
 
 Configure this skill with `./scripts/config.toml`. Configuration method see `./scripts/config.sample.toml`.
 
 - Start from `./scripts/config.sample.toml` and copy it to `./scripts/config.toml`.
 - Fill in a real account entry in `config.toml` before using the skill.
 
-## 3. Data Exchange Contract
+## Data Exchange Contract
 
-### 3.1. Overview
+### Overview
 
 All scripts follow the same JSON-over-stdin contract:
 
@@ -26,7 +74,7 @@ All scripts follow the same JSON-over-stdin contract:
 2. Script writes one JSON object to stdout.
 3. Logs and diagnostics are written to stderr.
 
-### 3.2. Request Schema
+### Request Schema
 
 ```json
 {
@@ -37,7 +85,7 @@ All scripts follow the same JSON-over-stdin contract:
 }
 ```
 
-### 3.3. Success Response Schema
+### Success Response Schema
 
 ```json
 {
@@ -50,7 +98,7 @@ All scripts follow the same JSON-over-stdin contract:
 
 Response `data` field definitions in this document describe possible fields; fields that are not applicable to a specific operation may be omitted.
 
-### 3.4. Error Response Schema
+### Error Response Schema
 
 ```json
 {
@@ -65,13 +113,25 @@ Response `data` field definitions in this document describe possible fields; fie
 }
 ```
 
-## 4. Scripts
+### Error Codes
 
-### 4.1. Overview
+| Code                   | Description                                 |
+| ---------------------- | ------------------------------------------- |
+| `VALIDATION_ERROR`     | Invalid input data or parameters            |
+| `CONFIG_ERROR`         | Configuration file missing or invalid       |
+| `AUTH_ERROR`           | Authentication failed (invalid credentials) |
+| `NETWORK_ERROR`        | Network connection failed                   |
+| `MAIL_OPERATION_ERROR` | IMAP/SMTP operation failed                  |
+| `MAILBOX_ERROR`        | Mailbox selection or management failed      |
+| `INTERNAL_ERROR`       | Unexpected internal error                   |
+
+## Scripts
+
+### Overview
 
 All scripts are under `scripts/`.
 
-### 4.2. `folder_create.py`
+### `folder_create.py`
 
 Create mailbox.
 
@@ -85,7 +145,7 @@ Response `data` fields:
 - `name`: string - Mailbox name created
 - `created`: boolean - `true` on success
 
-### 4.3. `folder_delete.py`
+### `folder_delete.py`
 
 Delete mailbox.
 
@@ -99,7 +159,7 @@ Response `data` fields:
 - `name`: string - Mailbox name deleted
 - `deleted`: boolean - `true` on success
 
-### 4.4. `folder_list.py`
+### `folder_list.py`
 
 List mailboxes.
 
@@ -114,7 +174,7 @@ Response `data` fields:
   - `flags`: string[] - IMAP LIST flags (e.g., `\HasNoChildren`, `\Noselect`)
   - `raw`: string - Original LIST row for diagnostics/compatibility
 
-### 4.5. `folder_rename.py`
+### `folder_rename.py`
 
 Rename mailbox.
 
@@ -130,7 +190,7 @@ Response `data` fields:
 - `newName`: string - New mailbox name
 - `renamed`: boolean - `true` on success
 
-### 4.6. `mail_copy.py`
+### `mail_copy.py`
 
 Copy email(s) from one mailbox to another.
 
@@ -148,7 +208,7 @@ Response `data` fields:
 - `targetFolder`: string - Target mailbox name
 - `copied`: boolean - `true` on success
 
-### 4.7. `mail_delete.py`
+### `mail_delete.py`
 
 Delete email(s).
 
@@ -166,7 +226,7 @@ Response `data` fields:
 - `deleted`: boolean - `true` on success
 - `expunged`: boolean - `true` if hard delete (`expunge`) was performed; otherwise `false`.
 
-### 4.8. `mail_forward.py`
+### `mail_forward.py`
 
 Forward email with optional additional body and attachments.
 
@@ -201,7 +261,7 @@ Response `data` fields:
 
 Automatically includes original email and attachments in forwarded message.
 
-### 4.9. `mail_mark.py`
+### `mail_mark.py`
 
 Mark email(s) with various flags.
 
@@ -228,7 +288,7 @@ Response `data` fields:
 - `flag`: string - IMAP flag name
 - `marked`: boolean - `true` on success
 
-### 4.10. `mail_move.py`
+### `mail_move.py`
 
 Move email(s) from one mailbox to another.
 
@@ -246,7 +306,7 @@ Response `data` fields:
 - `targetFolder`: string - Target mailbox name
 - `moved`: boolean - `true` on success
 
-### 4.11. `mail_read.py`
+### `mail_read.py`
 
 Read email content and metadata.
 
@@ -282,7 +342,7 @@ Response `data` fields:
 - `gmailLabels`: string[] - Gmail labels when server supports `X-GM-LABELS`
 - `tags`: string[] - Combined deduplicated list of flags and labels
 
-### 4.12. `mail_reply.py`
+### `mail_reply.py`
 
 Reply email.
 
@@ -319,7 +379,7 @@ Response `data` fields:
 - `references`: string - `References` header used
 - `subject`: string - Reply subject (with `Re:` prefix)
 
-### 4.13. `mail_list.py`
+### `mail_list.py`
 
 List emails using IMAP search query.
 
@@ -351,7 +411,7 @@ Response `data` fields:
   - `gmailLabels`: string[] - Gmail labels when server supports `X-GM-LABELS`
   - `tags`: string[] - Combined deduplicated list of flags and labels
 
-### 4.14. `mail_send.py`
+### `mail_send.py`
 
 Send a new email.
 
@@ -389,38 +449,97 @@ Response `data` fields:
 - `references`: string - `References` header used
 - `subject`: string - Sent email subject
 
-## 5. Examples
+## Examples
 
-Suppose the mailbox is already configured.
-
-**Windows PowerShell**
-
-```powershell
-# List new emails
-@'
-{"requestId":"req-list","schemaVersion":"1.0","data":{"maxResults":10}}
-'@ | python scripts/mail_list.py
-
-# Read the new email with UID `2`
-@'
-{"requestId":"req-read","schemaVersion":"1.0","data":{"uid":"2"}}
-'@ | python scripts/mail_read.py
-
-# Reply to the new email with UID `2`
-@'
-{"requestId":"req-reply","schemaVersion":"1.0","data":{"uid":"2","bodyText":"Thanks. Received and noted."}}
-'@ | python scripts/mail_reply.py
-```
-
-**Linux/Mac Terminal**
+### List new emails
 
 ```bash
-# List new emails
-echo '{"requestId":"req-list","schemaVersion":"1.0","data":{"maxResults":10}}' | python3 scripts/mail_list.py
+# Windows
+echo '{"requestId":"test","schemaVersion":"1.0","data":{"maxResults":10}}' | python scripts/mail_list.py
 
-# Read the new email with UID `2`
-echo '{"requestId":"req-read","schemaVersion":"1.0","data":{"uid":"2"}}' | python3 scripts/mail_read.py
+# Linux/Mac
+echo '{"requestId":"test","schemaVersion":"1.0","data":{"maxResults":10}}' | python3 scripts/mail_list.py
+```
 
-# Reply to the new email with UID `2`
-echo '{"requestId":"req-reply","schemaVersion":"1.0","data":{"uid":"2","bodyText":"Thanks. Received and noted."}}' | python3 scripts/mail_reply.py
+### Read email by UID
+
+```json
+{"requestId":"read","schemaVersion":"1.0","data":{"uid":"123"}}
+```
+
+### Search emails from sender
+
+```json
+{"requestId":"search","schemaVersion":"1.0","data":{"query":"FROM boss@example.com"}}
+```
+
+### Send email
+
+```json
+{"requestId":"send","schemaVersion":"1.0","data":{"to":["user@example.com"],"subject":"Hello","bodyText":"Hello world!"}}
+```
+
+### Reply to email
+
+```json
+{"requestId":"reply","schemaVersion":"1.0","data":{"uid":"123","bodyText":"Thanks!"}}
+```
+
+### Mark as read and move to folder
+
+```json
+{"requestId":"mark","schemaVersion":"1.0","data":{"uids":"123","markType":"read"}}
+{"requestId":"move","schemaVersion":"1.0","data":{"uids":"123","targetFolder":"Archive"}}
+```
+
+### Use specific account
+
+```json
+{"requestId":"req","schemaVersion":"1.0","account":"work","data":{"query":"ALL"}}
+```
+
+### Common IMAP search queries
+
+| Query | Description |
+|-------|-------------|
+| `UNSEEN` | Unread messages |
+| `FROM user@example.com` | From specific sender |
+| `SUBJECT "keyword"` | Subject contains keyword |
+| `SINCE 2024-01-01` | Since date |
+
+## Troubleshooting
+
+### Connection Issues
+
+- **AUTH_ERROR**: Check username/password, or use app-password if 2FA is enabled
+- **NETWORK_ERROR**: Verify firewall/network allows IMAP (993) and SMTP (465/587) ports
+- **CONFIG_ERROR**: Ensure `config.toml` is properly formatted TOML
+
+### Common Errors
+
+- **VALIDATION_ERROR**: Check that required fields are provided and of correct type
+- **MAILBOX_ERROR**: Verify the mailbox/folder name exists on the server
+- **MAIL_OPERATION_ERROR**: Check server capabilities and permissions
+
+### Debugging
+
+Check stderr for detailed error logs. Error responses include:
+
+- `code`: Error category
+- `message`: Human-readable description
+- `details`: Additional context for debugging
+
+Example error response:
+
+```json
+{
+  "ok": false,
+  "requestId": "test",
+  "schemaVersion": "1.0",
+  "error": {
+    "code": "AUTH_ERROR",
+    "message": "IMAP login failed (username&password)",
+    "details": { "phase": "imap.login" }
+  }
+}
 ```

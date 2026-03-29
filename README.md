@@ -27,14 +27,9 @@ scripts/
   mail_*.py               # Email operation scripts.
 README.md                 # Project readme.
 SKILL.md                  # Skill documentation (comprehensive guide).
-tests/
-  all.py                  # Orchestrates the full real-account test run.
-  unit/
-    folder_*.py           # Unit tests for folder management scripts.
-    mail_*.py             # Unit tests for email operation scripts.
 ```
 
-## 3. Main Scripts
+## 3. Commands
 
 - `folder_create.py` Create mailbox folders.
 - `folder_delete.py` Delete mailbox folders.
