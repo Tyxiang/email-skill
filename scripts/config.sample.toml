@@ -1,0 +1,49 @@
+[global]
+
+timeout = 30 # Request/response timeout in seconds (default: 30)
+
+[accounts.manual]
+
+# Basic Info
+default = true                        # Use this account when no account is explicitly selected
+email = "me@sample.com"               # Sender address shown in outgoing mail
+display_name = "Your Name"            # Optional. Display name for From header
+ssl_verify = true                     # Override SSL verification for this account
+
+# Authentication Method
+auth.type = "username&password"                                     # Authentication method: "username&password" / "username&app-password" / "oauth2". 
+
+## Authentication With "username&password". No selected no set.
+auth.username = "username"                                          # Login username for IMAP/SMTP
+auth.password = "password"                                          # Password
+
+## Authentication With "username&app-password". No selected no set.
+auth.username = "username"                                          # Login username for IMAP/SMTP
+auth.app-password = "app-password"                                  # App password
+
+## Authentication With "oauth2". No selected no set.
+auth.oauth2.client_id = "your-client-id"                            # OAuth2 client ID
+auth.oauth2.client_secret = "your-client-secret"                    # OAuth2 client secret
+auth.oauth2.refresh_token = "your-refresh-token"                    # OAuth2 refresh token
+auth.oauth2.token_url = ""                                          # OAuth2 token URL
+auth.oauth2.scope = ""                                              # OAuth2 scope
+
+# IMAP Configuration
+imap.host = "imap.sample.com"               # IMAP server hostname
+imap.port = 993                             # IMAP port (993 for SSL, 143 for plain/STARTTLS)
+imap.tls = true                             # Use implicit SSL/TLS from connection start
+imap.starttls = false                       # Use STARTTLS after connecting (port 143)
+imap.timeout = 30                           # Connection timeout in seconds (overrides global)
+
+# SMTP Configuration
+smtp.host = "smtp.sample.com"               # SMTP server hostname
+smtp.port = 465                             # SMTP port (465 for SSL, 587 for STARTTLS, 25 for plain)
+smtp.tls = true                             # Use implicit SSL, typically on port 465
+smtp.starttls = false                       # Use STARTTLS after connecting, typically on port 587
+smtp.timeout = 30                           # Connection timeout in seconds (overrides global)
+
+# Signature Configuration
+smtp.signature.enabled = true                               # Enable/disable signature appending
+smtp.signature.html = "<p>Your Name<br>me@sample.com</p>"   # HTML signature
+smtp.signature.text = "Your Name\r\n me@sample.com"         # Plain-text signature
+
