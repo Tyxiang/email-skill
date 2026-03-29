@@ -1,9 +1,7 @@
 from typing import Any
-from email import policy
-from email.parser import BytesParser
 from email.utils import getaddresses
 
-from common import (
+from scripts.common import (
 	apply_signatures,
 	decode_mime_header,
 	ensure_body_alternatives,
@@ -14,6 +12,7 @@ from common import (
 	close_smtp_safely,
 	connect_imap,
 	connect_smtp,
+	fetch_original_message,
 	get_sender_address,
 	get_smtp_signatures,
 	guess_attachment_type,
@@ -99,23 +98,7 @@ def handler(request: dict[str, Any]):
 	client = connect_imap(account_cfg)
 	try:
 		select_mailbox(client, folder)
-		status, fetched = client.uid("FETCH", uid, "(BODY.PEEK[])")
-		if status != "OK" or not fetched:
-			raise SkillError(
-				"MAIL_OPERATION_ERROR",
-				"Failed to fetch source mail for reply",
-				{"status": status, "uid": uid, "folder": folder},
-			)
-
-		raw_msg = None
-		for row in fetched:
-			if isinstance(row, tuple) and len(row) >= 2 and isinstance(row[1], (bytes, bytearray)):
-				raw_msg = bytes(row[1])
-				break
-		if raw_msg is None:
-			raise SkillError("MAIL_OPERATION_ERROR", "No RFC822 content found", {"uid": uid})
-
-		original = BytesParser(policy=policy.default).parsebytes(raw_msg)
+		original = fetch_original_message(client, uid, folder)
 	finally:
 		close_imap_safely(client)
 

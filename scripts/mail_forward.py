@@ -1,10 +1,9 @@
 from typing import Any
 import html
-import mimetypes
 from email import policy
 from email.parser import BytesParser
 
-from common import (
+from scripts.common import (
 	apply_signatures,
 	decode_mime_header,
 	ensure_body_alternatives,
@@ -16,8 +15,10 @@ from common import (
 	close_smtp_safely,
 	connect_imap,
 	connect_smtp,
+	fetch_original_message,
 	get_sender_address,
 	get_smtp_signatures,
+	guess_attachment_type,
 	html_to_text,
 	load_config,
 	parse_base64_attachments,
@@ -27,14 +28,6 @@ from common import (
 	text_to_html,
 	with_runtime,
 )
-
-
-def _guess_attachment_type(filename: str) -> tuple[str, str]:
-	guessed_type, _ = mimetypes.guess_type(filename)
-	if not guessed_type:
-		return "application", "octet-stream"
-	maintype, subtype = guessed_type.split("/", 1)
-	return maintype, subtype
 
 
 def _extract_attachments(message) -> list:
@@ -180,7 +173,7 @@ def handler(request: dict[str, Any]):
 
 	normalized_additional_attachments = []
 	for attachment in additional_attachments:
-		maintype, subtype = _guess_attachment_type(attachment["filename"])
+		maintype, subtype = guess_attachment_type(attachment["filename"])
 		normalized_additional_attachments.append(
 			{
 				"filename": attachment["filename"],

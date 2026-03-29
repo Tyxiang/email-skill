@@ -1,5 +1,5 @@
 from typing import Any
-from common import (
+from scripts.common import (
 	SkillError,
 	close_imap_safely,
 	connect_imap,
@@ -13,16 +13,16 @@ from common import (
 
 def handler(request: dict[str, Any]):
 	data = request.get("data", {})
-	mark_type = data.get("markType", "read")
+	mark_type = data.get("markType")
 	uids = normalize_uids(data.get("uids"))
 	folder = data.get("folder", "INBOX")
 
-	if not isinstance(mark_type, str):
-		raise SkillError("VALIDATION_ERROR", "data.markType must be string when provided")
+	if not isinstance(mark_type, str) or not mark_type.strip():
+		raise SkillError("VALIDATION_ERROR", "data.markType is required")
 	if not isinstance(folder, str) or not folder.strip():
 		raise SkillError("VALIDATION_ERROR", "data.folder must be string")
 
-	mark_type = mark_type.strip().lower() or "read"
+	mark_type = mark_type.strip().lower()
 	folder = folder.strip()
 
 	# Map markType to IMAP flags

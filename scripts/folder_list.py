@@ -1,5 +1,5 @@
 from typing import Any
-from common import SkillError, close_imap_safely, connect_imap, load_config, resolve_account, with_runtime
+from scripts.common import SkillError, close_imap_safely, connect_imap, load_config, resolve_account, with_runtime
 
 
 def _skip_spaces(line: str, start: int) -> int:

@@ -1,233 +1,162 @@
-# AGENTS.md - Developer Guide for email-skill
+# AGENTS.md - Development Guidelines
 
-This document provides guidelines for agents working on this codebase.
-
-## Project Overview
-
-This is a Python-based email automation skill that provides IMAP/SMTP operations through JSON-over-stdin/stdout scripts. Scripts are located in `scripts/` and communicate via JSON requests/responses.
-
-## Build, Test, and Run Commands
+## Build & Run Commands
 
 ### Running Scripts
-
 ```bash
-# Windows
-echo '{"requestId":"test","schemaVersion":"1.0","data":{}}' | python scripts/mail_list.py
+# Run a script with JSON input via stdin (Windows PowerShell)
+echo '{"requestId":"test","schemaVersion":"1.0","data":{...}}' | python scripts/mail_list.py
 
-# Linux/Mac
-echo '{"requestId":"test","schemaVersion":"1.0","data":{}}' | python3 scripts/mail_list.py
-```
-
-### Virtual Environment
-
-```bash
-# Activate virtual environment
-# Windows
-.venv\Scripts\python.exe scripts/mail_list.py
-
-# Linux/Mac
-source .venv/bin/activate
-python3 scripts/mail_list.py
+# Run a script with JSON input via stdin (Linux/Mac)
+echo '{"requestId":"test","schemaVersion":"1.0","data":{...}}' | python3 scripts/mail_list.py
 ```
 
 ### Testing
+No formal test framework is configured. Test scripts manually by piping JSON requests:
+```bash
+# List emails
+echo '{"requestId":"test","schemaVersion":"1.0","data":{"maxResults":5}}' | python scripts/mail_list.py
 
-There are currently no automated tests in this repository. When adding tests:
-- Place test files in a `tests/` directory at the project root
-- Use `pytest` as the test framework
-- Run a single test: `pytest tests/test_file.py::test_function_name`
+# Read email
+echo '{"requestId":"read","schemaVersion":"1.0","data":{"uid":"123"}}' | python scripts/mail_read.py
 
-### Linting/Type Checking
+# Send email
+echo '{"requestId":"send","schemaVersion":"1.0","data":{"to":["user@example.com"],"subject":"Test","bodyText":"Hello"}}' | python scripts/mail_send.py
+```
 
-No pre-configured linting tools exist. If adding them, consider:
-- `ruff` for linting
-- `mypy` for type checking
+### Linting & Formatting
+No linting tools are currently installed. Add to `.venv` if needed:
+```bash
+./.venv/Scripts/pip.exe install ruff black mypy pytest
+```
 
 ## Code Style Guidelines
 
-### Python Version
-
-- Use Python 3.11+ syntax and features
-- Use built-in `tomllib` (Python 3.11+)
-
 ### Imports
-
-- Standard library imports first, then third-party
-- Use absolute imports from `common` (e.g., `from common import ...`)
-- Group imports by type with blank lines between groups:
-  ```python
-  import json
-  import smtplib
-  from typing import Any
-  
-  from email.message import EmailMessage
-  from email.utils import formataddr
-  
-  from common import SkillError, connect_imap
-  ```
-
-### Type Annotations
-
-- Use type hints for all function parameters and return types
-- Use `Any` when type is unknown
-- Use `dict[str, Any]` for JSON-like dictionaries
-- Use `list[str]`, `tuple[str, ...]` for collections
-- Union types: prefer `X | None` over `Optional[X]`
-- Use `X | Y` syntax (Python 3.10+)
-
-### Naming Conventions
-
-- Functions: `snake_case` (e.g., `connect_imap`, `load_config`)
-- Classes: `PascalCase` (e.g., `SkillError`)
-- Constants: `UPPER_SNAKE_CASE` (e.g., `SCHEMA_VERSION`)
-- Variables: `snake_case` (e.g., `account_name`, `account_cfg`)
-- Private functions: prefix with `_` (e.g., `_extract_summary`)
-
-### Error Handling
-
-- Use the `SkillError` dataclass from `common.py` for all errors
-- Error codes should be in `UPPER_SNAKE_CASE`:
-  - `VALIDATION_ERROR` - Invalid input data
-  - `CONFIG_ERROR` - Configuration issues
-  - `AUTH_ERROR` - Authentication failures
-  - `NETWORK_ERROR` - Network/connection issues
-  - `MAIL_OPERATION_ERROR` - IMAP/SMTP operation failures
-  - `MAILBOX_ERROR` - Mailbox selection/management issues
-  - `INTERNAL_ERROR` - Unexpected errors (auto-handled)
-- Include helpful error messages and details
-- Chain exceptions using `from exc` for debugging
-- Use `write_error()` and `write_unknown_error()` from `common` for responses
-
-### Response Format
-
-All scripts must follow this JSON contract:
-
+- Standard library imports first (alphabetically sorted)
+- Third-party imports second
+- Local imports last (from `common` module)
+- Use `from typing import Any` for type hints
+- Example:
 ```python
-# Success
-{
-    "ok": True,
-    "requestId": "...",
-    "schemaVersion": "1.0",
-    "data": { ... }
-}
+import base64
+import json
+from typing import Any
 
-# Error
-{
-    "ok": False,
-    "requestId": "...",
-    "schemaVersion": "1.0",
-    "error": {
-        "code": "ERROR_CODE",
-        "message": "Human readable message",
-        "details": { ... }  # optional
-    }
-}
+from common import SkillError, load_config, with_runtime
 ```
 
-### Script Template
+### Formatting
+- **Indentation**: Tabs (not spaces)
+- **Line length**: Keep lines reasonable (no strict limit enforced)
+- **Quotes**: Double quotes for strings
+- **Trailing commas**: Use in multi-line structures
 
-Follow this structure for new scripts:
-
+### Type Hints
+- Use Python 3.10+ style union syntax: `str | None` instead of `Optional[str]`
+- Use `dict[str, Any]` for generic dictionaries
+- Use `list[str]` for lists of strings
+- Annotate function parameters and return types
+- Example:
 ```python
-from typing import Any
-from common import (
-    SkillError,
-    close_imap_safely,
-    connect_imap,
-    load_config,
-    resolve_account,
-    with_runtime,
-)
-
-
-def handler(request: dict[str, Any]) -> dict[str Any]:
+def handler(request: dict[str, Any]) -> dict[str, Any]:
     data = request.get("data", {})
-    # Validation
-    # ...
-    
-    config = load_config()
-    account_name, account_cfg = resolve_account(config, request.get("account"))
-    
-    client = connect_imap(account_cfg)
-    try:
-        # IMAP operations
-        # ...
-        return {
-            "account": account_name,
-            # response fields
-        }
-    finally:
-        close_imap_safely(client)
+    uid: str | None = data.get("uid")
+```
 
+### Naming Conventions
+- **Functions**: `snake_case` (e.g., `load_config`, `parse_recipients`)
+- **Variables**: `snake_case` (e.g., `account_name`, `body_text`)
+- **Classes**: `PascalCase` (e.g., `SkillError`, `_HTMLToTextParser`)
+- **Constants**: `UPPER_CASE` (e.g., `SCHEMA_VERSION`)
+- **Private functions**: Prefix with underscore (e.g., `_get_password_from_env`)
+
+### Error Handling
+- Use custom `SkillError` exception for all errors
+- Always provide error code and human-readable message
+- Include `details` dict for additional context when helpful
+- Standard error codes:
+  - `VALIDATION_ERROR`: Invalid input
+  - `CONFIG_ERROR`: Configuration issues
+  - `AUTH_ERROR`: Authentication failures
+  - `NETWORK_ERROR`: Connection failures
+  - `MAIL_OPERATION_ERROR`: IMAP/SMTP failures
+  - `MAILBOX_ERROR`: Mailbox selection failures
+  - `INTERNAL_ERROR`: Unexpected errors
+- Example:
+```python
+if not uid:
+    raise SkillError("VALIDATION_ERROR", "data.uid is required")
+```
+
+### Function Structure
+- All scripts follow the same pattern:
+  1. Imports at top
+  2. Helper functions (if needed)
+  3. `handler(request: dict[str, Any])` function
+  4. `if __name__ == "__main__"` block calling `with_runtime(handler)`
+- Use `finally` blocks for resource cleanup (IMAP/SMTP connections)
+- Example:
+```python
+def handler(request: dict[str, Any]):
+    # Validate input
+    # Process request
+    return { ... }
 
 if __name__ == "__main__":
     raise SystemExit(with_runtime(handler))
 ```
 
-### Data Classes
-
-Use `@dataclass` for structured error types:
-
+### Resource Management
+- Always use try/finally for IMAP/SMTP connections
+- Use helper functions: `close_imap_safely()`, `close_smtp_safely()`
+- Example:
 ```python
-@dataclass
-class SkillError(Exception):
-    code: str
-    message: str
-    details: dict[str, Any] | None = None
-
-    def as_dict(self) -> dict[str, Any]:
-        # ...
+client = connect_imap(account_cfg)
+try:
+    # Use client
+finally:
+    close_imap_safely(client)
 ```
 
-### JSON Handling
+### JSON Contract
+- All scripts: JSON request via stdin, JSON response via stdout
+- Logs/errors: stderr
+- Request format: `{"requestId": "...", "schemaVersion": "1.0", "data": {...}}`
+- Success response: `{"ok": true, "requestId": "...", "data": {...}}`
+- Error response: `{"ok": false, "requestId": "...", "error": {"code": "...", "message": "..."}}`
 
-- Use `json` module for JSON serialization/deserialization
-- Always use `ensure_ascii=True` for consistent output
-- Use `json.dumps()` not `json.dump()` for stdout
+### Documentation
+- Add docstrings to public functions
+- Include type hints for all parameters
+- Comment complex logic inline
 
-### Logging
+## Configuration
+- Copy `scripts/config.default.toml` to `scripts/config.toml`
+- Set environment variables for authentication:
+  - Password: `EMAIL_USERNAME`, `EMAIL_PASSWORD`
+  - OAuth2: `EMAIL_OAUTH2_CLIENT_ID`, `EMAIL_OAUTH2_CLIENT_SECRET`, `EMAIL_OAUTH2_REFRESH_TOKEN`, `EMAIL_OAUTH2_TOKEN_URL`
 
-- Use `_stderr_log()` from `common` for structured logging
-- Log levels: `INFO`, `WARN`, `ERROR`
-
-### IMAP/SMTP Best Practices
-
-- Always close connections in `finally` blocks using `close_imap_safely()` / `close_smtp_safely()`
-- Use `select_mailbox()` to select folders with proper error handling
-- Use `uid` commands where possible for consistency
-- Handle connection timeouts
-- Validate SSL certificates (default on)
-
-### Configuration
-
-- Configuration file: `scripts/config.toml`
-- Sample: `scripts/config.sample.toml`
-- Use `load_config()` from `common` to load
-- Use `resolve_account()` to get account with fallback
-
-### Key Modules in common.py
-
-| Function | Purpose |
-|----------|---------|
-| `SkillError` | Error dataclass |
-| `load_config()` | Load TOML config |
-| `resolve_account()` | Get account config |
-| `read_request()` | Parse stdin JSON |
-| `write_success()` | Write success response |
-| `write_error()` | Write error response |
-| `connect_imap()` | IMAP connection |
-| `connect_smtp()` | SMTP connection |
-| `with_runtime()` | Request/response wrapper |
-
-### Adding New Scripts
-
-1. Create `scripts/mail_<operation>.py` or `scripts/folder_<operation>.py`
-2. Use the script template above
-3. Add documentation to `SKILL.md`
-4. Test with sample JSON request
-
-### Gitignore
-
-The project ignores:
-- `.venv/` - Virtual environment
-- `config.toml` - Runtime configuration (contains secrets)
+## Project Structure
+```
+repository/
+  scripts/
+    common/             # Shared utilities (modular package)
+      __init__.py       # Public API exports
+      errors.py         # SkillError exception and constants
+      validators.py     # Input validation
+      config.py         # Configuration loading
+      auth.py           # OAuth2 and password authentication
+      imap_utils.py     # IMAP operations
+      smtp_utils.py     # SMTP operations
+      parsers.py        # Email parsing
+      protocol.py       # JSON protocol handling
+    config.default.toml # Default config template
+    config.toml         # Local config (gitignored)
+    folder_*.py         # Folder management scripts
+    mail_*.py           # Email operation scripts
+  requirements.txt      # Python dependencies
+  README.md
+  SKILL.md
+  AGENTS.md
+```

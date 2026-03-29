@@ -1,2 +1,4 @@
 .venv/
 ./scripts/__pycache__/
+./scripts/common/__pycache__/
+./scripts/config.toml

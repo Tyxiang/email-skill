@@ -1,5 +1,5 @@
-﻿from typing import Any
-from common import (
+from typing import Any
+from scripts.common import (
 	SkillError,
 	close_imap_safely,
 	connect_imap,
@@ -57,4 +57,6 @@ def handler(request: dict[str, Any]):
 
 if __name__ == "__main__":
 	raise SystemExit(with_runtime(handler))
+
+
 

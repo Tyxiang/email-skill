@@ -2,7 +2,7 @@ from typing import Any
 from email import policy
 from email.parser import BytesParser
 
-from common import (
+from scripts.common import (
 	SkillError,
 	close_imap_safely,
 	connect_imap,
@@ -11,6 +11,7 @@ from common import (
 	load_config,
 	resolve_account,
 	select_mailbox,
+	validate_imap_query,
 	with_runtime,
 )
 
@@ -77,7 +78,7 @@ def handler(request: dict[str, Any]):
 		raise SkillError("VALIDATION_ERROR", "data.maxResults must be an integer between 1 and 10000")
 
 	folder = folder.strip()
-	query = query.strip() or "UNSEEN"
+	query = validate_imap_query(query)
 
 	config = load_config()
 	account_name, account_cfg = resolve_account(config, request.get("account"))

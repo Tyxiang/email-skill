@@ -1,5 +1,5 @@
 from typing import Any
-from common import (
+from scripts.common import (
 	apply_signatures,
 	ensure_body_alternatives,
 	SkillError,

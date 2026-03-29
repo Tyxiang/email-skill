@@ -1,5 +1,5 @@
 from typing import Any
-from common import (
+from scripts.common import (
 	SkillError,
 	close_imap_safely,
 	connect_imap,

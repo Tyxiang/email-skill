@@ -12,7 +12,7 @@ This skill provides script-based email operations for an agent. It includes func
 - JSON requests received from stdin.
 - JSON responses written to stdout.
 - Structured errors and diagnostic logs written to stderr.
-- Flexible local configuration via `config.sample.toml` and `config.toml`.
+- Flexible local configuration via `config.default.toml` and `config.toml`.
 - Support Multi-account.
 - Support authentication of username & password / username & app-password / OAuth2 .
 
@@ -20,13 +20,15 @@ This skill provides script-based email operations for an agent. It includes func
 
 ```
 scripts/
-  common.py               # Common utilities and core logic.
-  config.sample.toml      # Safe example config file (with detailed comments).
+  common/                 # Shared utilities (modular package).
+  config.default.toml     # Default config file (copy to config.toml).
   config.toml             # Local runtime config (gitignored).
   folder_*.py             # Folder management scripts.
   mail_*.py               # Email operation scripts.
+requirements.txt          # Python dependencies (standard library only).
 README.md                 # Project readme.
 SKILL.md                  # Skill documentation (comprehensive guide).
+AGENTS.md                 # Development guidelines for agents.
 ```
 
 ## 3. Commands

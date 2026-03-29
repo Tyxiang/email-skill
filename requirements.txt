@@ -1,0 +1,17 @@
+# Email-Skill Dependencies
+# ========================
+# This project uses only Python standard library modules.
+# No external dependencies are required.
+#
+# Python 3.11+ is required for the following features:
+# - tomllib (added in Python 3.11)
+# - Modern type hint syntax (str | None)
+#
+# To set up the development environment:
+#   python -m venv .venv
+#   .venv/Scripts/pip install --upgrade pip
+#
+# Optional development tools (not required for runtime):
+#   .venv/Scripts/pip install ruff black mypy pytest
+
+python>=3.11

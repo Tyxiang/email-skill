@@ -1,6 +1,14 @@
-﻿from typing import Any
+from typing import Any
 
-from common import SkillError, close_imap_safely, connect_imap, load_config, resolve_account, with_runtime
+from scripts.common import (
+	SkillError,
+	close_imap_safely,
+	connect_imap,
+	load_config,
+	resolve_account,
+	validate_folder_name,
+	with_runtime,
+)
 
 
 def handler(request: dict[str, Any]):
@@ -8,7 +16,8 @@ def handler(request: dict[str, Any]):
 	name = data.get("name")
 	if not isinstance(name, str) or not name.strip():
 		raise SkillError("VALIDATION_ERROR", "data.name is required")
-	name = name.strip()
+	
+	name = validate_folder_name(name)
 
 	config = load_config()
 	account_name, account_cfg = resolve_account(config, request.get("account"))
@@ -29,4 +38,6 @@ def handler(request: dict[str, Any]):
 
 if __name__ == "__main__":
 	raise SystemExit(with_runtime(handler))
+
+
 

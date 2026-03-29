@@ -4,7 +4,7 @@ import base64
 from email import policy
 from email.parser import BytesParser
 
-from common import (
+from scripts.common import (
 	SkillError,
 	close_imap_safely,
 	connect_imap,
